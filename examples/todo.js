@@ -1,5 +1,6 @@
 var Odin = require("../src/odin"),
-    bind = require("mout/function/bind");
+    bind = require("mout/function/bind"),
+    forEach = require("mout/array/forEach");
 
 var TodoModel = Odin.Model.extend({
     properties: {
@@ -9,7 +10,8 @@ var TodoModel = Odin.Model.extend({
 
 var TodoView = Odin.Base.extend({
     storage: null,
-    todo: null,
+    todoList: [],
+    list: document.querySelector("#list"),
 
     inject: {
         storage: "localStorage"
@@ -20,10 +22,14 @@ var TodoView = Odin.Base.extend({
 
         document.querySelector("body").removeChild(document.querySelector("#runGulpFirst"));
 
-        this.storage.get("todo", "item", function(todo) {
-            self.todo = new TodoModel(todo);
+        this.storage.get("todo", "items", function(items) {
+            forEach(items, function(item) {
+                item = JSON.parse(item);
+                var todo = new TodoModel(item);
 
-            document.querySelector("#todo").value = self.todo.what;
+                self.add(todo);
+                self.todoList.push(todo);
+            });
         });
 
         document.querySelector("#todo").onchange = bind(this.update, this);
@@ -31,10 +37,18 @@ var TodoView = Odin.Base.extend({
         return this;
     },
 
-    update: function() {
-        this.todo.what = document.querySelector("#todo").value;
+    add: function(todo) {
+        var li = document.createElement("li");
 
-        this.storage.update(this.todo, { store: "todo", key: "item" });
+        li.innerText = todo.what;
+
+        this.list.appendChild(li);
+    },
+
+    update: function() {
+        this.todoList.push(new TodoModel({ what: document.querySelector("#todo").value }));
+
+        this.storage.update(this.todoList, { store: "todo", key: "items" });
     }
 });
 
