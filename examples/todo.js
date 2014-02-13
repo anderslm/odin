@@ -18,6 +18,8 @@ var TodoView = Odin.Base.extend({
     init: function() {
         var self = this;
 
+        document.querySelector("body").removeChild(document.querySelector("#runGulpFirst"));
+
         this.storage.get("todo", "item", function(todo) {
             self.todo = new TodoModel(todo);
 
