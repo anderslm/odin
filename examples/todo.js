@@ -27,28 +27,38 @@ var TodoView = Odin.Base.extend({
                 item = JSON.parse(item);
                 var todo = new TodoModel(item);
 
-                self.add(todo);
-                self.todoList.push(todo);
+                self.doAdd(todo);
             });
         });
 
-        document.querySelector("#todo").onchange = bind(this.update, this);
+        document.querySelector("#todo").onkeypress = bind(this.add, this);
 
         return this;
     },
 
-    add: function(todo) {
+    doAdd: function(todo) {
         var li = document.createElement("li");
+        var id = document.createAttribute("id");
 
-        li.innerText = todo.what;
+        todo.id = this.todoList.length;
+
+        id.value = todo.id;
+        li.setAttributeNode(id);
+        li.innerHTML = todo.what + "<a href='#'>[Delete]</a>";
 
         this.list.appendChild(li);
+        this.todoList.push(todo);
     },
 
-    update: function() {
-        this.todoList.push(new TodoModel({ what: document.querySelector("#todo").value }));
+    add: function(event) {
+        if(13 === event.keyCode)
+        {
+            this.doAdd(new TodoModel({ what: document.querySelector("#todo").value }));
 
-        this.storage.update(this.todoList, { store: "todo", key: "items" });
+            this.storage.update(this.todoList, { store: "todo", key: "items" });
+
+            document.querySelector("#todo").value = "";
+        }
     }
 });
 
